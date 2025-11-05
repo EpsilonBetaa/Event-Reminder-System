@@ -4,6 +4,10 @@
 
 Version 2.2 | IEEE-HKN Epsilon Beta Chapter at ASU
 
+[![Google Apps Script](https://img.shields.io/badge/Google%20Apps%20Script-V8-blue.svg)](https://developers.google.com/apps-script)
+[![Version](https://img.shields.io/badge/version-2.0.0-green.svg)](WEBMASTER_GUIDE.md)
+[![Status](https://img.shields.io/badge/status-production-success.svg)](WEBMASTER_GUIDE.md)
+
 ---
 
 ## Overview
