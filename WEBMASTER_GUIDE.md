@@ -1,6 +1,8 @@
 # IEEE-HKN EVENT REMINDER SYSTEM
-**Documentation for Webmasters**
-**Version 2.2**
+## Complete Technical Documentation for Webmaster
+
+**Version:** 2.2
+**Last Updated:** November 2025
 
 ---
 
