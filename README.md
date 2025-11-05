@@ -65,8 +65,6 @@ Reminder/
 
 ## Support
 
-**Contact**: webmaster@hkn.asu.edu
-
 **For Issues**: Refer to the troubleshooting section in [WEBMASTER_GUIDE.md](WEBMASTER_GUIDE.md)
 
 **External Resources**:
