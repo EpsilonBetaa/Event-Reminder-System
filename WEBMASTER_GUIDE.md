@@ -671,7 +671,6 @@ Previous versions: See code comments in eventReminder.js
 **Last Updated:** November 2025
 **Maintained by:** IEEE-HKN Epsilon Beta Chapter Webmasters
 **Current Webmaster:** Vishesh Singh Rajput (2024-2025, 2025-2026)
-**Contact:** webmaster@hkn.asu.edu
 
 For questions, suggestions, or issues, please reach out to current chapter leadership or refer to IEEE-HKN national resources.
 
