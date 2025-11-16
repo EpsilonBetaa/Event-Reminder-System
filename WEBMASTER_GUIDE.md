@@ -1,8 +1,6 @@
 # IEEE-HKN EVENT REMINDER SYSTEM
-## Complete Technical Documentation for Webmaster
-
-**Version:** 2.2
-**Last Updated:** November 2025
+**Documentation for Webmasters**
+**Version 2.2**
 
 ---
 
@@ -23,16 +21,18 @@
 
 ## 1. OVERVIEW
 
-This is an automated event reminder system built with Google Apps Script that monitors the IEEE-HKN chapter's Google Calendar and sends timely notifications to your Discord server.
+This is an automated event reminder system built with Google Apps Script that monitors the IEEE-HKN chapter's Google Calendar and sends timely notifications to your **Discord and Slack** channels simultaneously.
 
 ### KEY FEATURES:
 
 - Automatically sends reminders at 3 intervals: 2 weeks, 1 week, and 1 day before events
+- **Dual platform support**: Sends to both Discord and Slack at the same time
 - Runs every 5 minutes in the background
 - Extracts meeting links (Zoom, Google Meet, Microsoft Teams) from events
 - Prevents duplicate reminders with smart tracking
 - Includes comprehensive error handling and self-recovery
 - Built-in testing tools for verification
+- Independent enable/disable controls for each platform
 
 ---
 
@@ -73,8 +73,8 @@ If you have an event on November 20th at 6:00 PM:
 3. For each event, it calculates the time until the event starts
 4. Checks if any reminder interval matches (2 weeks, 1 week, or 1 day)
 5. Verifies the reminder hasn't been sent already (duplicate prevention)
-6. Creates a formatted Discord message with event details
-7. Sends the message to your Discord channel via webhook
+6. Creates formatted messages for both Discord and Slack
+7. Sends messages to Discord (via webhook) and Slack (via API) simultaneously
 8. Records that the reminder was sent to prevent duplicates
 
 ### SMART FEATURES:
@@ -96,6 +96,8 @@ If you have an event on November 20th at 6:00 PM:
 2. A Google Calendar named "HKN Events" (or update the CONFIG)
 3. Admin access to the IEEE-HKN Discord server
 4. Discord webhook URL for the announcements channel
+5. Slack workspace with app creation permissions
+6. Slack bot token and channel ID (with scopes: chat:write, chat:write.public, channels:read, chat:write.customize)
 
 ### INITIAL SETUP STEPS:
 
@@ -126,14 +128,23 @@ If you have an event on November 20th at 6:00 PM:
 - Grant permissions when prompted
 - You should receive a Discord message confirming setup
 
-**[STEP 5] Verify Installation**
+**[STEP 5] Configure Slack (Optional)**
+- Create Slack app at api.slack.com/apps with required bot scopes
+- Install app to workspace and obtain Bot User OAuth Token
+- Add bot to your Slack channel
+- Add `SLACK_BOT_TOKEN` and `SLACK_CHANNEL_ID` to CONFIG (lines 10-11)
+- Set `SLACK_ENABLED: true` in CONFIG.FEATURES (line 57)
+- Test with: `testSlackIntegration()`
+
+**[STEP 6] Verify Installation**
 - Run function: runComprehensiveTest
 - Check the execution log (View > Logs)
 - Verify Discord received a test message
+- Verify Slack received a test message (if enabled)
 
 ### ACTIVATION:
 
-Once setup is complete, the system runs automatically. No further action needed!
+Once setup is complete, the system runs automatically and sends to both platforms!
 
 ---
 
@@ -147,6 +158,16 @@ All configuration is in the CONFIG object at the top of eventReminder.js (Lines 
 - Your Discord webhook URL
 - Get this from Discord server settings
 - IMPORTANT: Keep this secure!
+
+**[CONFIG] SLACK_BOT_TOKEN**
+- Your Slack bot OAuth token (starts with `xoxb-`)
+- Get this from Slack App settings
+- IMPORTANT: Keep this secure!
+
+**[CONFIG] SLACK_CHANNEL_ID**
+- Your Slack channel ID (format: C############)
+- Find in channel details
+- Can be testing or production channel
 
 **[CONFIG] CALENDAR_NAME**
 - Name of your Google Calendar
@@ -224,6 +245,11 @@ DAY: {
 **[FLAG] FILTER_CANCELLED_EVENTS: true**
 - Skip cancelled events automatically
 
+**[FLAG] SLACK_ENABLED: true**
+- Enable/disable Slack integration
+- Set to false to send only to Discord
+- Set to true to send to both Discord and Slack simultaneously
+
 ---
 
 ## 6. TESTING & VERIFICATION
@@ -242,6 +268,7 @@ The system includes several testing functions. To run them:
 **[TEST] runComprehensiveTest()**
 - Tests all major components
 - Verifies Discord connection
+- Verifies Slack connection (if enabled)
 - Checks calendar access
 - Validates reminder logic
 - RECOMMENDED: Run this after any configuration changes
@@ -255,8 +282,8 @@ The system includes several testing functions. To run them:
 **[TEST] forceImmediateReminder(eventTitle, reminderType)**
 - Manually trigger a reminder for testing
 - Example: forceImmediateReminder('General Meeting', 'WEEK')
-- Actually sends to Discord
-- USE CAREFULLY: Will ping your Discord server
+- Actually sends to Discord and Slack (if enabled)
+- USE CAREFULLY: Will ping your Discord and Slack channels
 
 **[TEST] getSystemStatus()**
 - Returns current system health metrics
@@ -268,14 +295,26 @@ The system includes several testing functions. To run them:
 - Verifies webhook is working
 - Quick connectivity test
 
+**[TEST] testSlackIntegration()**
+- Sends a formatted test message to Slack
+- Verifies bot token and channel configuration
+- Tests Slack API connectivity
+- RECOMMENDED: Run after Slack setup or channel changes
+
 ### MANUAL TESTING PROCEDURE:
 
+**Discord Testing:**
 1. Create a test event in "HKN Events" calendar 2 weeks from now
 2. Run: testWithNextEvent()
 3. Check logs - should show your test event and calculated reminders
 4. Run: forceImmediateReminder('Your Test Event', 'TWO_WEEKS')
 5. Check Discord - should receive a formatted reminder message
 6. Delete test event from calendar
+
+**Slack Testing:**
+1. Run: testSlackIntegration()
+2. Check your Slack channel for test message
+3. Verify message format and bot appearance
 
 ---
 
@@ -284,7 +323,7 @@ The system includes several testing functions. To run them:
 ### REGULAR MONITORING:
 
 **[WEEKLY] WEEKLY CHECKS:**
-- Verify reminders are being sent (check Discord history)
+- Verify reminders are being sent (check Discord and Slack history)
 - Review any error messages in Discord
 - Confirm calendar events are being picked up
 
@@ -351,6 +390,29 @@ The system performs automatic maintenance:
    - Discord > Server Settings > Integrations > Webhooks
 4. Verify webhook has permission to post:
    - Check channel permissions
+
+### [ISSUE] PROBLEM: Slack messages not appearing
+
+**SOLUTIONS:**
+1. Test Slack connection:
+   - Run: testSlackIntegration()
+2. Verify SLACK_ENABLED is true:
+   - Check CONFIG.FEATURES.SLACK_ENABLED (line 57)
+3. Verify bot token is correct:
+   - Check CONFIG.SLACK_BOT_TOKEN (line 10)
+4. Verify channel ID is correct:
+   - Check CONFIG.SLACK_CHANNEL_ID (line 11)
+5. Ensure bot is added to the channel:
+   - In Slack: `/invite @Event Reminder Bot`
+   - Or: Channel settings > Integrations > Add apps
+6. Check bot permissions:
+   - Bot needs: chat:write, chat:write.public, channels:read, chat:write.customize
+   - Verify at [api.slack.com/apps](https://api.slack.com/apps)
+
+**Common Slack Errors:**
+- **"not_in_channel"**: Bot hasn't been invited to the channel
+- **"invalid_auth"**: Bot token is incorrect or expired
+- **"channel_not_found"**: Channel ID is incorrect
 
 ### [ISSUE] PROBLEM: Duplicate reminders being sent
 
@@ -429,6 +491,7 @@ THREE_DAYS: {
 
 ### [MODIFY] CHANGE MESSAGE FORMAT:
 
+**Discord Messages:**
 Edit createEnhancedDiscordMessage() function (line 422)
 
 The message structure uses Discord embeds:
@@ -448,6 +511,16 @@ In the fields array, add:
   inline: true
 }
 ```
+
+**Slack Messages:**
+Edit createSlackMessage() function (line 575)
+
+The message structure uses Slack Block Kit:
+- header: Event title
+- section blocks: Event details with markdown
+- context: Footer information
+
+Both message formats mirror each other to maintain consistency across platforms.
 
 ### [MODIFY] CHANGE EXECUTION FREQUENCY:
 
@@ -506,12 +579,14 @@ sheet.appendRow([new Date(), event.getTitle(), reminderType, 'Sent']);
 
 **[SECURITY] CRITICAL SECURITY PRACTICES:**
 
-1. **PROTECT THE WEBHOOK URL**
+1. **PROTECT THE WEBHOOK URL AND TOKENS**
    - Never share publicly or commit to public repositories
-   - If exposed, regenerate immediately in Discord
+   - If Discord webhook exposed, regenerate immediately in Discord
+   - If Slack bot token exposed, regenerate in Slack App settings
    - Consider storing in Script Properties instead of code:
      ```javascript
      PropertiesService.getScriptProperties().setProperty('webhookUrl', 'URL');
+     PropertiesService.getScriptProperties().setProperty('slackToken', 'TOKEN');
      ```
 
 2. **LIMIT SCRIPT ACCESS**
@@ -522,6 +597,7 @@ sheet.appendRow([new Date(), event.getTitle(), reminderType, 'Sent']);
 3. **AUDIT PERMISSIONS**
    - Review what permissions the script has
    - Only grant minimum necessary permissions
+   - Verify Slack bot scopes are minimal (chat:write, chat:write.public, channels:read)
    - Regular audit of Apps Script authorization
 
 ### BEST PRACTICES:
@@ -542,9 +618,9 @@ sheet.appendRow([new Date(), event.getTitle(), reminderType, 'Sent']);
 - Keep at least 2 previous versions
 
 **[PRACTICE] MONITOR REGULARLY**
-- Check Discord weekly for any error messages
+- Check Discord and Slack weekly for any error messages
 - Review execution logs monthly
-- Verify reminders are being sent on time
+- Verify reminders are being sent on time to both platforms
 
 **[PRACTICE] HANDLE TRANSITIONS SMOOTHLY**
 - Document any custom modifications for next webmaster
@@ -561,7 +637,7 @@ Google Apps Script has daily quotas. Current limits for consumer accounts:
 
 This system uses approximately:
 - 288 executions/day (every 5 minutes)
-- ~1-3 UrlFetch calls/day (only when sending reminders)
+- ~2-6 UrlFetch calls/day (when sending reminders to Discord and Slack)
 - 1 time-based trigger
 
 You're well within limits, but be aware if scaling up.
@@ -583,14 +659,23 @@ You're well within limits, but be aware if scaling up.
 - **[DISCORD]** Don't delete webhook without updating script
 - **[DISCORD]** Create a dedicated bot/webhook channel for testing
 
+### SLACK BEST PRACTICES:
+
+- **[SLACK]** Use <!everyone> sparingly (2 weeks, 1 week)
+- **[SLACK]** Use <!channel> for urgent reminders (1 day)
+- **[SLACK]** Always add bot to channel before enabling
+- **[SLACK]** Test with a dedicated testing channel first
+- **[SLACK]** Keep bot token secure and regenerate if exposed
+- **[SLACK]** Verify bot has minimum required permissions only
+
 ### TROUBLESHOOTING WORKFLOW:
 
 When something goes wrong:
 
-1. Check Discord for any error messages from the bot
+1. Check Discord and Slack for any error messages from the bot
 2. Open Apps Script > Executions > Look for errors
 3. Run getSystemStatus() to check overall health
-4. Run testDiscordConnection() to verify connectivity
+4. Run testDiscordConnection() and testSlackIntegration() to verify connectivity
 5. Check this documentation for specific error solutions
 6. Review recent changes to calendar or script
 7. If stuck, refer to version history to see what changed
@@ -606,9 +691,10 @@ setupAutomaticReminders()      - Initial setup and trigger creation
 
 ### TESTING:
 ```
-runComprehensiveTest()         - Full system test
+runComprehensiveTest()         - Full system test (Discord & Slack)
 testWithNextEvent()            - Preview next reminder
 testDiscordConnection()        - Test Discord webhook
+testSlackIntegration()         - Test Slack bot and connectivity
 getSystemStatus()              - Check system health
 ```
 
@@ -638,6 +724,7 @@ Example: forceImmediateReminder('Meeting', 'WEEK')
 ### EXTERNAL RESOURCES:
 - Google Apps Script Documentation: developers.google.com/apps-script
 - Discord Webhook Guide: discord.com/developers/docs/resources/webhook
+- Slack API Documentation: api.slack.com/docs
 - Apps Script Calendar Service: developers.google.com/apps-script/reference/calendar
 
 ### GETTING HELP:
@@ -654,8 +741,10 @@ Example: forceImmediateReminder('Meeting', 'WEEK')
 ## VERSION HISTORY
 
 **Version 2.2 (Current)**
+- Dual platform support: Discord and Slack integration
 - Comprehensive error handling
 - Discord integration with rich embeds
+- Slack integration with Block Kit messages
 - Meeting link extraction (Zoom, Meet, Teams)
 - Maintenance mode feature
 - Extensive testing utilities
@@ -671,6 +760,7 @@ Previous versions: See code comments in eventReminder.js
 **Last Updated:** November 2025
 **Maintained by:** IEEE-HKN Epsilon Beta Chapter Webmasters
 **Current Webmaster:** Vishesh Singh Rajput (2024-2025, 2025-2026)
+**Contact:** webmaster@hkn.asu.edu
 
 For questions, suggestions, or issues, please reach out to current chapter leadership or refer to IEEE-HKN national resources.
 
